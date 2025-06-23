@@ -1,14 +1,25 @@
-import React from "react";
-import SyntaxHighlighter from "react-syntax-highlighter/dist/esm/prism-async";
-import { dark } from "react-syntax-highlighter/dist/esm/styles/prism";
+import SyntaxHighlighter from "react-syntax-highlighter";
+import { dark } from "react-syntax-highlighter/dist/esm/styles/hljs";
 
-const Code = ({ children }: { children: string }) => {
+const Code = ({
+  className,
+  children,
+}: {
+  className?: string;
+  children: string;
+}) => {
+  const language = className?.replace("lang-", "") || "javascript";
+
   return (
-    <div>
-      <SyntaxHighlighter language="javascript" style={dark}>
-        {children}
-      </SyntaxHighlighter>
-    </div>
+    <SyntaxHighlighter
+      customStyle={{ margin: 0, background: "#111", border: "none" }}
+      language={language}
+      style={dark}
+      className="rounded-lg text-sm my-4 bg-black"
+      showLineNumbers
+    >
+      {children}
+    </SyntaxHighlighter>
   );
 };
 

@@ -1,93 +1,136 @@
-import React, { useState } from "react";
-import { DEFAULT_README } from "../constants";
-import { FaSpinner } from "react-icons/fa";
+import { useState } from "react";
+import { FormData } from "../page";
 
-interface Props {
-  readme: string;
-  setReadme: React.Dispatch<React.SetStateAction<string>>;
-}
+const Form = ({
+  onSubmit,
+  isGenerating,
+  onStop,
+}: {
+  onSubmit: (data: FormData) => void;
+  isGenerating: boolean;
+  onStop: () => void;
+}) => {
+  const [formData, setFormData] = useState<FormData>({
+    title: "",
+    description: "",
+    techStacks: "",
+  });
 
-const Form = ({ readme, setReadme }: Props) => {
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [techStacks, setTechStacks] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | undefined>(undefined);
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    const formData = {
-      title,
-      description,
-      techStacks,
-    };
-
-    try {
-      setLoading(true);
-      const response = await fetch("/api/generate-readme", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-      setReadme(data.readme);
-    } catch (error) {
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
+    onSubmit(formData);
   };
 
   return (
-    <div className="m-6">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <div className="flex gap-8 ">
-          <label className="antialiased font-bold w-20">Title</label>
-          <input
-            type="text"
-            className="bg-gray-900 p-3 font-medium outline-none border-none w-3/4"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            required
-          />
-        </div>
-        <div className="flex gap-3">
-          <label className="antialiased font-bold w-30">Description</label>
-          <textarea
-            className=" bg-gray-900 p-3 font-medium outline-none border-none w-3/4"
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            required
-          />
-        </div>
-        <div className="flex gap-3">
-          <label className="antialiased font-bold">Tech Stacks </label>
-          <input
-            type="text"
-            className=" bg-gray-900 p-3 font-medium outline-none border-none w-3/4"
-            value={techStacks}
-            onChange={(e) => setTechStacks(e.target.value)}
-            required
-          />
-        </div>
-
-        <button
-          className="bg-gradient-to-tr flex justify-center w-1/2 self-center my-6 from accent-amber-400 via-inherit to-black border-2 border-slate-100 px-4 py-2 "
-          type="submit"
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div>
+        <label
+          htmlFor="title"
+          className="block text-sm font-medium text-gray-300 mb-1"
         >
-          {loading ? (
-            <FaSpinner className="animate-spin text-xl text-center" />
-          ) : (
-            "Generate README"
-          )}
-        </button>
-      </form>
-    </div>
+          Project Title
+        </label>
+        <input
+          type="text"
+          id="title"
+          name="title"
+          value={formData.title}
+          onChange={handleChange}
+          required
+          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-white placeholder-gray-400"
+          placeholder="My Awesome Project"
+        />
+      </div>
+
+      <div>
+        <label
+          htmlFor="description"
+          className="block text-sm font-medium text-gray-300 mb-1"
+        >
+          Description
+        </label>
+        <textarea
+          id="description"
+          name="description"
+          value={formData.description}
+          onChange={handleChange}
+          required
+          rows={4}
+          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-white placeholder-gray-400"
+          placeholder="A brief description of your project..."
+        />
+      </div>
+
+      <div>
+        <label
+          htmlFor="techStacks"
+          className="block text-sm font-medium text-gray-300 mb-1"
+        >
+          Technologies Used
+        </label>
+        <input
+          type="text"
+          id="techStacks"
+          name="techStacks"
+          value={formData.techStacks}
+          onChange={handleChange}
+          required
+          className="w-full px-4 py-2 bg-gray-700 border border-gray-600 rounded-lg focus:ring-2 focus:ring-amber-500 focus:border-transparent text-white placeholder-gray-400"
+          placeholder="React, TypeScript, Next.js, TailwindCSS"
+        />
+        <p className="mt-1 text-xs text-gray-400">
+          Separate technologies with commas
+        </p>
+      </div>
+
+      <div className="pt-2">
+        {isGenerating ? (
+          <button
+            type="button"
+            onClick={onStop}
+            className="w-full py-3 px-4 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+          >
+            <svg
+              className="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              ></circle>
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+            Stop Generating
+          </button>
+        ) : (
+          <button
+            type="submit"
+            className="w-full py-3 px-4 bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-medium rounded-lg transition-all hover:shadow-lg hover:shadow-amber-500/20"
+          >
+            Generate README
+          </button>
+        )}
+      </div>
+    </form>
   );
 };
 
-export default Form;
+
+export default Form
